@@ -69,6 +69,20 @@
   /* punto de leyenda Media inasistencia usa --navy muy oscuro, se pierde en fondo oscuro */
   [data-theme="dark"] .dot[style*="var(--navy)"]{background:#5a9ab0 !important;}
   [data-theme="dark"] .legend-item .dot[style*="var(--navy)"]{background:#5a9ab0 !important;}
+  /* === MODAL Y PANEL ADMIN EN OSCURO === */
+  [data-theme="dark"] .overlay{background:rgba(0,0,0,.6);}
+  [data-theme="dark"] .modal h2{color:var(--ink);}
+  [data-theme="dark"] .modal .sub{color:var(--ink-soft);}
+  [data-theme="dark"] .modal label{color:var(--ink-soft);}
+  [data-theme="dark"] .modal input{background:var(--editable-bg);border-color:var(--editable-border);color:var(--ink);}
+  [data-theme="dark"] .modal input::placeholder{color:var(--ink-soft);}
+  [data-theme="dark"] .cat-item{border-color:var(--line);}
+  [data-theme="dark"] .cat-item input{color:var(--ink);}
+  [data-theme="dark"] .cat-item input::placeholder{color:var(--ink-soft);}
+  [data-theme="dark"] .tab-btn{background:var(--computed-bg);color:var(--ink-soft);border-color:var(--line);}
+  [data-theme="dark"] .tab-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  [data-theme="dark"] .empty-cat{color:var(--ink-soft);}
+  [data-theme="dark"] .add-row input{background:var(--editable-bg);border-color:var(--editable-border);color:var(--ink);}
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
@@ -1478,7 +1492,9 @@
       const scriptText = document.getElementById('docenteAppTemplate').textContent
         .replace('__CATALOGS_JSON__', JSON.stringify(catalogs));
 
-      const html = '<!DOCTYPE html>\n<html lang="es">\n<head>\n' +
+      const toggleBtnHTML = '<button class="theme-toggle" id="themeToggle" title="Cambiar modo claro / oscuro" aria-label="Cambiar tema">\n  <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>\n  <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>\n</button>\n';
+      const toggleScript = '<script>(function(){const html=document.documentElement;const btn=document.getElementById("themeToggle");const saved=localStorage.getItem("reporte-theme");if(saved)html.setAttribute("data-theme",saved);if(btn)btn.addEventListener("click",()=>{const cur=html.getAttribute("data-theme")||"light";const next=cur==="light"?"dark":"light";html.setAttribute("data-theme",next);localStorage.setItem("reporte-theme",next);const el=document.getElementById("f-totinasist");if(el)el.dispatchEvent(new Event("input",{bubbles:true}));});})();<\/script>\n';
+      const html = '<!DOCTYPE html>\n<html lang="es" data-theme="light">\n<head>\n' +
         '<meta charset="UTF-8">\n' +
         '<meta name="viewport" content="width=device-width, initial-scale=1.0">\n' +
         '<title>Reporte Mensual de Asistencia y Media</title>\n' +
@@ -1487,8 +1503,8 @@
         '<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"><\/script>\n' +
         '<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"><\/script>\n' +
         '<style>' + styleText + '</style>\n' +
-        '</head>\n<body>\n<div class="wrap">\n' + bodyHTML + '\n</div>\n' +
-        '<script>' + scriptText + '<\/script>\n' +
+        '</head>\n<body>\n' + toggleBtnHTML + '<div class="wrap">\n' + bodyHTML + '\n</div>\n' +
+        '<script>' + scriptText + '<\/script>\n' + toggleScript +
         '</body>\n</html>\n';
 
       const blob = new Blob([html], { type: 'text/html' });
