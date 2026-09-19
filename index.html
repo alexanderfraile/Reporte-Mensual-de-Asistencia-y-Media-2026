@@ -827,12 +827,27 @@
     }
     await new Promise(r => requestAnimationFrame(()=> requestAnimationFrame(r)));
 
+    const htmlEl = document.documentElement;
+    const wasDark = htmlEl.getAttribute('data-theme') === 'dark';
+    if(wasDark){
+      htmlEl.setAttribute('data-theme', 'light');
+      if(typeof recalc === 'function') recalc();
+      await new Promise(r => requestAnimationFrame(()=> requestAnimationFrame(r)));
+    }
+
     const scale = isMobileDevice() ? 1.5 : 2;
     const el = $('exportArea');
-    return await html2canvas(el, {
-      scale, backgroundColor: '#ffffff', useCORS: true,
-      windowWidth: 1040
-    });
+    try{
+      return await html2canvas(el, {
+        scale, backgroundColor: '#ffffff', useCORS: true,
+        windowWidth: 1040
+      });
+    } finally {
+      if(wasDark){
+        htmlEl.setAttribute('data-theme', 'dark');
+        if(typeof recalc === 'function') recalc();
+      }
+    }
   }
 
   function directDownload(blob, filename){
@@ -1225,20 +1240,38 @@
     }
     await new Promise(r => requestAnimationFrame(()=> requestAnimationFrame(r)));
 
+    // El PDF/JPEG siempre se genera en modo claro (para que se lea e imprima bien
+    // sin importar el tema activo en pantalla). Redibujamos los donuts en colores
+    // claros antes de capturar y los restauramos después, sin afectar la vista.
+    const htmlEl = document.documentElement;
+    const wasDark = htmlEl.getAttribute('data-theme') === 'dark';
+    if(wasDark){
+      htmlEl.setAttribute('data-theme', 'light');
+      recalc();
+      await new Promise(r => requestAnimationFrame(()=> requestAnimationFrame(r)));
+    }
+
     // En móviles usamos una escala menor para evitar que el navegador
     // agote memoria y falle al generar canvases muy grandes.
     const scale = isMobileDevice() ? 1.5 : 2;
     const el = $('exportArea');
-    return await html2canvas(el, {
-      scale, backgroundColor: '#ffffff', useCORS: true,
-      // Forzamos que el "documento virtual" usado para renderizar tenga
-      // ancho de escritorio, así el PDF/JPEG siempre sale organizado en
-      // columnas (como en PC) sin importar que se genere desde un celular.
-      // No fijamos windowHeight: dejamos que html2canvas mida la altura
-      // real del contenido ya reacomodado a ese ancho, para no recortar
-      // el borde inferior de la tarjeta.
-      windowWidth: 1040
-    });
+    try{
+      return await html2canvas(el, {
+        scale, backgroundColor: '#ffffff', useCORS: true,
+        // Forzamos que el "documento virtual" usado para renderizar tenga
+        // ancho de escritorio, así el PDF/JPEG siempre sale organizado en
+        // columnas (como en PC) sin importar que se genere desde un celular.
+        // No fijamos windowHeight: dejamos que html2canvas mida la altura
+        // real del contenido ya reacomodado a ese ancho, para no recortar
+        // el borde inferior de la tarjeta.
+        windowWidth: 1040
+      });
+    } finally {
+      if(wasDark){
+        htmlEl.setAttribute('data-theme', 'dark');
+        recalc();
+      }
+    }
   }
 
   // Descarga el archivo directamente al dispositivo (Descargas / Archivos / Fotos).
